@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>SISTEM INFORMASI LAPORAN PENGAWASAN JPH</title>
+  <style>
+    body {
+      background-color: #004d00; /* hijau tua */
+      font-family: Arial, sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      background-color: #a5d6a7; /* hijau muda */
+      width: 90%;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+      color: #000;
+    }
+    h2 {
+      text-align: center;
+      color: white;
+      margin-top: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    textarea {
+      background-color: #fff; /* putih bersih */
+      resize: vertical;
+    }
+    button {
+      background-color: #2e7d32;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #1b5e20;
+    }
+    #successMessage {
+      display: none;
+      text-align: center;
+      color: #004d00;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>SISTEM INFORMASI LAPORAN PENGAWASAN JAMINAN PRODUK HALAL<br>KANWIL KEMENAG PROVINSI JAWA TENGAH</h2>
+
+  <div class="container">
+    <form id="laporanForm">
+      
+      <label>Nama Pengawas JPH:</label>
+      <input type="text" name="nama_pengawas" required>
+
+      <label>NIP:</label>
+      <input type="number" name="nip" required>
+
+      <label>Satuan Kerja:</label>
+      <input type="text" name="satuan_kerja" required>
+
+      <label>Ringkasan Eksekutif:</label>
+      <textarea name="ringkasan" rows="5"></textarea>
+
+      <label>Dasar Pengawasan:</label>
+      <textarea name="dasar"></textarea>
+
+      <label>Tujuan Pengawasan:</label>
+      <textarea name="tujuan"></textarea>
+
+      <label>Ruang Lingkup:</label>
+      <select name="ruang_lingkup" required>
+        <option value="">-- Pilih Ruang Lingkup --</option>
+        <option value="Pengawasan LPH">Pengawasan LPH</option>
+        <option value="Pengawasan LP3H dan/atau P3H">Pengawasan LP3H dan/atau P3H</option>
+        <option value="Pengawasan Pelaku Usaha">Pengawasan Pelaku Usaha</option>
+        <option value="Pengawasan Produk">Pengawasan Produk</option>
+      </select>
+
+      <label>Objek Pengawasan JPH:</label>
+      <input type="text" name="objek">
+
+      <label>Tanggal Pengawasan:</label>
+      <input type="date" name="tanggal">
+
+      <label>Lokasi Pengawasan:</label>
+      <input type="text" name="lokasi">
+
+      <label>Jenis Pengawasan:</label>
+      <select name="jenis_pengawasan" required>
+        <option value="">-- Pilih Jenis Pengawasan --</option>
+        <option value="Berkala (6 bulan sekali)">Berkala (6 bulan sekali)</option>
+        <option value="Sewaktu-waktu">Sewaktu-waktu</option>
+      </select>
+
+      <label>Metode Pengawasan:</label>
+      <select name="metode" required>
+        <option value="">-- Pilih Metode --</option>
+        <option value="Langsung">Langsung</option>
+        <option value="Tidak Langsung">Tidak Langsung</option>
+      </select>
+
+      <label>Pengambilan Contoh:</label>
+      <textarea name="contoh"></textarea>
+
+      <label>Kondisi:</label>
+      <textarea name="kondisi"></textarea>
+
+      <label>Kriteria:</label>
+      <textarea name="kriteria"></textarea>
+
+      <label>Sebab:</label>
+      <textarea name="sebab"></textarea>
+
+      <label>Akibat:</label>
+      <textarea name="akibat"></textarea>
+
+      <label>Rekomendasi:</label>
+      <textarea name="rekomendasi"></textarea>
+
+      <label>Lampiran Bukti Pengawasan JPH (PDF/JPG/PNG):</label>
+      <input type="file" name="lampiran" accept=".pdf,.jpg,.png">
+
+      <label>Kendala Pengawasan:</label>
+      <textarea name="kendala"></textarea>
+
+      <button type="submit">Kirim</button>
+      <div id="successMessage">Data sudah terkirim ke Spreadsheet</div>
+    </form>
+  </div>
+
+  <script>
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxOIhEhoISKSSR1kzZG_ukoT2CpFhWB8W5yW8OaCd6jWAq65cwY7dAuoKzfdv7JBvNC/exec"; // Ganti dengan URL Web App Google Apps Script Anda
+    const form = document.getElementById('laporanForm');
+    const successMsg = document.getElementById('successMessage');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+      .then(response => {
+        successMsg.style.display = 'block';
+        form.reset();
+        setTimeout(() => successMsg.style.display = 'none', 4000);
+      })
+      .catch(error => alert('Maaf, data belum bisa terkirim.'));
+    });
+  </script>
+
+</body>
+</html>
