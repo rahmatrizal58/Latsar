@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Chatbot Regulasi Halal (BPJPH) — Demo</title>
+<style>
+  /* Gaya widget sederhana */
+  :root{--bg:#0b1220;--accent:#0a84ff;--card:#ffffff;--text:#0b1220}
+  body{font-family:Inter, system-ui, "Segoe UI", Roboto, Arial; margin:0}
+  /* tombol kecil di pojok */
+  #chat-launch{
+    position:fixed; right:20px; bottom:20px;
+    width:64px; height:64px; border-radius:999px;
+    background:linear-gradient(135deg,var(--accent),#0066cc);
+    box-shadow: 0 6px 18px rgba(10,10,10,0.2);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:9999;
+    border: none;
+  }
+  #chat-launch svg{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.25));}
+  /* panel chat */
+  #chat-panel{
+    position:fixed; right:20px; bottom:100px;
+    width:360px; max-width:calc(100% - 40px); height:520px;
+    background:var(--card); border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.2);
+    display:flex; flex-direction:column; overflow:hidden; z-index:9999;
+    transform: translateY(20px); transition: all .18s ease;
+  }
+  .chat-header{background:linear-gradient(0deg,var(--accent),#0077ee); padding:14px; color:white; display:flex; align-items:center; gap:12px}
+  .chat-header .title{font-weight:600}
+  .chat-body{flex:1; padding:12px; overflow-y:auto; background: #f6f8fb;}
+  .msg{max-width:82%; margin:8px 0; padding:10px 12px; border-radius:10px; line-height:1.4}
+  .msg.bot{background:#ffffff; color:var(--text); align-self:flex-start; border:1px solid #e6e9ef}
+  .msg.user{background:#0a84ff;color:white; align-self:flex-end; border-radius:10px}
+  .chat-footer{padding:10px; display:flex; gap:8px; background:white; align-items:center}
+  .chat-input{flex:1; padding:10px 12px; border-radius:8px; border:1px solid #d4d7dc}
+  .btn{padding:8px 12px; border-radius:8px; background:var(--accent); color:white; border:none; cursor:pointer}
+  .source{font-size:11px;color:#556; margin-top:6px}
+  .small{font-size:12px;color:#666}
+  /* responsive */
+  @media (max-width:420px){
+    #chat-panel{right:12px; left:12px; width:auto; height:60vh}
+  }
+</style>
+</head>
+<body>
+
+<!-- tombol peluncur -->
+<button id="chat-launch" aria-label="Buka chat">
+  <!-- icon chat -->
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M21 12a8.5 8.5 0 1 0-2.1 5.2L21 21l-1.8-5.8A8.422 8.422 0 0 0 21 12z" fill="white"/></svg>
+</button>
+
+<!-- panel chat (disembunyikan awalnya) -->
+<div id="chat-panel" style="display:none" role="dialog" aria-label="Chatbot Regulasi Halal">
+  <div class="chat-header">
+    <div style="width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center">
+      <strong>H</strong>
+    </div>
+    <div>
+      <div class="title">Chat Regulasi Halal</div>
+      <div class="small">Jawaban disederhanakan dari dokumen BPJPH</div>
+    </div>
+  </div>
+
+  <div class="chat-body" id="chat-body" aria-live="polite">
+    <div style="text-align:center; color:#555; margin-top:18px;">
+      Halo! tanyakan hal terkait sertifikasi halal, SJPH, kriteria UMK self-declare, jenis produk wajib, atau tarif layanan.
+      <div class="small" style="margin-top:8px">Contoh: "Bagaimana syarat UMK dapat self-declare?" atau "Apa saja kategori produk wajib halal?"</div>
+    </div>
+  </div>
+
+  <div class="chat-footer">
+    <input id="chat-input" class="chat-input" placeholder="Ketik pertanyaan... mis. syarat self-declare" aria-label="Pertanyaan" />
+    <button id="send-btn" class="btn">Kirim</button>
+  </div>
+</div>
+
+<script>
+/* ---------------------------
+  Basis pengetahuan ringkas (FAQ-like)
+  -- Jawaban ringkas (bahasa Indonesia)
+  -- Sumber: label (dokumen BPJPH yang Anda upload)
+  --------------------------- */
+
+const KB = [
+  {
+    id: 'self-declare-kriteria',
+    keywords: ['umk','self','self declare','pernyataan halal','mikro','kecil','skema self'],
+    question: 'Syarat UMK untuk mendapatkan sertifikasi halal dengan skema self-declare (ringkas).',
+    answer:
+`Syarat utama (ringkas):
+1. Pelaku usaha mikro/kecil dengan NIB.
+2. Produk: jenis makanan/minuman yang tercantum di lampiran self-declare.
+3. Bahan dan proses sudah dipastikan halal (bahan bersertifikat atau bahan alami).
+4. Tidak menggunakan bahan berisiko/haram atau metode pengolahan yang kompleks.
+5. Memiliki Penyelia Halal (bisa pelaku usaha sendiri).
+6. Melengkapi dokumen online: surat permohonan, surat pernyataan self-declare, akad/ikrar, daftar bahan & proses, foto produk, manual SJPH.
+Jika dipenuhi, proses verifikasi dilakukan oleh Pendamping PPH.` ,
+    source: 'Sumber: Kep. Kepala BPJPH No.146/2025 (Petunjuk Teknis Self-Declare)'
+  },
+  {
+    id: 'jenis-produk-wajib',
+    keywords: ['jenis produk','wajib','kma 944','kewajiban','produk wajib','kma','kma 944 2024'],
+    question: 'Apa kategori jenis produk yang wajib bersertifikat halal (ringkas)?',
+    answer:
+`Ringkasan: Kategori produk yang wajib bersertifikat halal meliputi makanan dan minuman (dengan rincian jenis pada lampiran). Contoh: susu & turunannya, olahan daging, minuman siap saji, makanan olahan, kosmetik tertentu, obat tertentu, dsb. Rincian lengkap tercantum pada Lampiran KMA No.944/2024.` ,
+    source: 'Sumber: KMA No.944 Tahun 2024 (Lampiran jenis produk wajib)'
+  },
+  {
+    id: 'kriteria-sjph',
+    keywords: ['sjph','kriteria sjph','sistem jaminan produk halal','kriteria','kepkaban 20'],
+    question: 'Apa inti Kriteria SJPH (Sistem Jaminan Produk Halal)?',
+    answer:
+`Inti kriteria SJPH (ringkas):
+1. Komitmen & tanggung jawab manajemen.
+2. Pengelolaan bahan (identifikasi bahan kritis).
+3. Pengendalian proses produksi (PPH).
+4. Produk akhir dan penanganannya.
+5. Pemantauan & evaluasi (audit internal, tindakan korektif).
+SJPH memastikan bahan, proses, dan produk memenuhi persyaratan halal secara berkelanjutan.` ,
+    source: 'Sumber: Kep. Kepala BPJPH No.20/2023 (Perubahan Kriteria SJPH)'
+  },
+  {
+    id: 'tarif-self-declare',
+    keywords: ['tarif','biaya','self declare biaya','gratis','tarif layanan','14 2024','atran'],
+    question: 'Apakah ada biaya untuk layanan sertifikasi self-declare UMK?',
+    answer:
+`Untuk layanan sertifikasi halal skema self-declare (pelaku usaha mikro & kecil) ditetapkan **tarif Rp 0,00 (bebas biaya)**. Pembiayaan layanan dapat berasal dari APBN, APBD, dana hibah, atau skema pembiayaan lain yang sah.` ,
+    source: 'Sumber: Keputusan Kepala BPJPH No.14 Tahun 2024 (Tarif Layanan) & aturan terkait.'
+  },
+  {
+    id: 'dokumen-diperlukan',
+    keywords: ['dokumen','dokumen pengajuan','persyaratan dokumen','berkas','pengajuan sertifikat'],
+    question: 'Dokumen apa yang harus disiapkan untuk pengajuan sertifikasi (self-declare)?',
+    answer:
+`Dokumen penting (ringkas):
+- Nomor Induk Berusaha (NIB).
+- Surat permohonan pendaftaran sertifikasi halal (online).
+- Surat pernyataan pendaftaran self-declare.
+- Akad/ikrar pernyataan halal.
+- Daftar bahan & daftar proses produksi.
+- Foto produk & nama produk.
+- Manual SJPH (atau dokumen sederhana yang menjelaskan PPH).
+- Data penyelia halal.` ,
+    source: 'Sumber: Kep. Kepala BPJPH No.146/2025 (Petunjuk Teknis Self-Declare)'
+  },
+  {
+    id: 'fallback',
+    keywords: [],
+    question: 'Fallback / belum ada jawaban spesifik',
+    answer:
+`Maaf, saya belum menemukan jawaban spesifik untuk pertanyaan itu dalam ringkasan regulasi. Tolong tanyakan dengan lebih spesifik (mis. "Apakah minyak goreng harus bersertifikat?" atau "Bagaimana proses verifikasi Pendamping PPH?"). Saya akan jawab berdasarkan dokumen BPJPH yang tersedia.`,
+    source: 'Sumber: Basis regulasi BPJPH (dokumen terlampir)'
+  }
+];
+
+/* Simple keyword search: match if any keyword exists in user query.
+   If multiple KB entries match, return the one with most matched keywords.
+*/
+function findBestAnswer(query){
+  const q = query.toLowerCase();
+  let best = null;
+  let bestScore = 0;
+  for(const item of KB){
+    let score = 0;
+    for(const kw of item.keywords){
+      if( q.includes(kw.toLowerCase()) ) score++;
+    }
+    if(score > bestScore){ bestScore = score; best = item; }
+  }
+  if(bestScore === 0){
+    // try fuzzy mapping: check important tokens
+    if(q.includes('syarat') && q.includes('umk')) return KB.find(k=>k.id==='self-declare-kriteria');
+    if(q.includes('jenis') && q.includes('produk')) return KB.find(k=>k.id==='jenis-produk-wajib');
+    return KB.find(k=>k.id==='fallback');
+  }
+  return best;
+}
+
+/* UI logic */
+const launch = document.getElementById('chat-launch');
+const panel = document.getElementById('chat-panel');
+const body = document.getElementById('chat-body');
+const input = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+
+launch.addEventListener('click', ()=>{
+  panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+  if(panel.style.display !== 'none') input.focus();
+});
+
+function appendMessage(text, who='bot', source=null){
+  const el = document.createElement('div');
+  el.className = 'msg ' + (who==='bot' ? 'bot':'user');
+  el.innerHTML = text.replace(/\n/g,'<br>');
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexDirection = 'column';
+  if(who==='user'){
+    wrapper.style.alignItems = 'flex-end';
+  } else {
+    wrapper.style.alignItems = 'flex-start';
+  }
+  wrapper.appendChild(el);
+  if(source && who==='bot'){
+    const s = document.createElement('div');
+    s.className = 'source';
+    s.textContent = source;
+    wrapper.appendChild(s);
+  }
+  body.appendChild(wrapper);
+  body.scrollTop = body.scrollHeight + 200;
+}
+
+function processQuery(q){
+  if(!q || q.trim().length===0) return;
+  appendMessage(q,'user');
+  // find answer
+  const ansItem = findBestAnswer(q);
+  // small simulated "thinking"
+  setTimeout(()=>{
+    appendMessage(ansItem.answer,'bot', ansItem.source);
+  }, 300);
+}
+
+// send handlers
+sendBtn.addEventListener('click', ()=>{
+  const q = input.value.trim();
+  input.value = '';
+  processQuery(q);
+});
+input.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter'){ e.preventDefault(); sendBtn.click(); }
+});
+
+</script>
+</body>
+</html>
