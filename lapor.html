@@ -192,24 +192,37 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbwMp-fc_ml9fH6-gLKoILq7KO4v5DN0L7HHFmKsAmGnbOTi-RihBIlBxoQlbFSuGm9q/exec"; // Ganti dengan URL Web App Google Apps Script Anda
-    const form = document.getElementById('laporanForm');
-    const successMsg = document.getElementById('successMessage');
+  const scriptURL = "https://script.google.com/macros/s/AKfycbyPQYMrpkdZhgtkDReJue9dcNtUaBgc-OvqouLCIAUsVxu5axWbO873ArDXcH5QE18F/exec";
+  const form = document.getElementById('laporanForm');
+  const successMsg = document.getElementById('successMessage');
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      fetch(scriptURL, { method: 'POST', body: new FormData(form)})
-      .then(response => {
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+
+    fetch(scriptURL, {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.text())
+    .then(text => {
+      if (text.includes("SUCCESS")) {
         successMsg.style.display = 'block';
         form.reset();
         setTimeout(() => successMsg.style.display = 'none', 4000);
-      })
-      .catch(error => alert('Maaf, data belum bisa terkirim.'));
-    });
-  </script>
+      } else {
+        alert("Terjadi kesalahan: " + text);
+      }
+    })
+    .catch(err => alert("Maaf, data belum bisa terkirim.\n" + err));
+  });
+</script>
+
 
 </body>
 </html>
+
 
 
 
