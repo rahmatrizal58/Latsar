@@ -71,7 +71,7 @@
   <h2>SISTEM INFORMASI LAPORAN PENGAWASAN JAMINAN PRODUK HALAL<br>KANWIL KEMENAG PROVINSI JAWA TENGAH</h2>
 
   <div class="container">
-    <form id="laporanForm">
+    <form id="laporanForm" enctype="multipart/form-data">
       
       <label>Nama Pengawas JPH:</label>
       <input type="text" name="nama_pengawas" required>
@@ -192,7 +192,7 @@
   </div>
 
   <script>
-    const scriptURL = "https://script.google.com/macros/s/AKfycbz7Swyrk2o81HDifVBBdiiCAqjUwYMih3ZJkV1tixzlmBzSAOdaCZGMOYdCi_diU4vI/exec"; // Ganti dengan URL Web App Google Apps Script Anda
+    const scriptURL = "https://script.google.com/macros/s/AKfycbwPoU0fhjJAlCXZo5FUrB9aWSyw0wEXsL6yB5RPniV-JqUnFprYjinm_3lEwPO5pT2E/exec"; // Ganti dengan URL Web App Google Apps Script Anda
     const form = document.getElementById('laporanForm');
     const successMsg = document.getElementById('successMessage');
 
@@ -210,6 +210,7 @@
 
 </body>
 </html>
+
 
 
 
