@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Upload Lampiran</title>
+<style>
+  body {
+    font-family: Arial;
+    margin: 20px;
+    background: #004d00; /* hijau tua */
+  }
+  .box {
+    background: #ccffcc; /* hijau muda */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 340px;
+    margin: auto;
+    text-align: center;
+  }
+  input[type=file], input[type=text], input[type=date] {
+    margin: 10px 0;
+    width: 92%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #status {
+    margin-top: 15px;
+  }
+  .small {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h3>UPLOAD LAMPIRAN PENGAWASAN JPH</h3>
+  <p>Kanwil Kementerian Agama Provinsi Jawa Tengah</p>
+  <input type="text" id="uploaderName" placeholder="Masukkan nama Anda"><br>
+  <input type="date" id="uploadDate"><br>
+  <input type="file" id="fileInput"><br>
+  <button id="uploadBtn">Upload</button>
+  <p id="status"></p>
+  <div class="small"></div>
+</div>
+
+<script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwf8ducsTmcMfDLAGffdYJZI6AkdIZqTOZyqJ_2geRJO_fgPTSdwI7ha3hjz915wBeG/exec";
+  const parentURL = "https://rahmatrizal58.github.io/Latsar/lapor.html";
+  const STORAGE_KEY = "uploadFormState_v1";
+
+  // Simpan nama & tanggal agar kalau dibuka lagi tetap ada
+  function saveFormState() {
+    try {
+      const payload = {
+        uploaderName: document.getElementById('uploaderName').value || "",
+        uploadDate: document.getElementById('uploadDate').value || ""
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      console.warn("Gagal menyimpan state:", e);
+    }
+  }
+
+  function restoreFormState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (data.uploaderName) document.getElementById('uploaderName').value = data.uploaderName;
+      if (data.uploadDate) document.getElementById('uploadDate').value = data.uploadDate;
+    } catch (e) {
+      console.warn("Gagal restore form state:", e);
+    }
+  }
+
+  window.onload = () => {
+    const today = new Date().toISOString().split('T')[0];
+    if (!document.getElementById('uploadDate').value) {
+      document.getElementById('uploadDate').value = today;
+    }
+    restoreFormState();
+  };
+
+  document.getElementById('uploadBtn').addEventListener('click', uploadFile);
+
+  async function uploadFile() {
+    const name = document.getElementById('uploaderName').value.trim();
+    const date = document.getElementById('uploadDate').value;
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
+    const file = fileInput.files[0];
+
+    if (!name) return alert("Masukkan nama Anda terlebih dahulu!");
+    if (!date) return alert("Pilih tanggal upload!");
+    if (!file) return alert("Pilih file yang akan diupload!");
+
+    status.innerText = "⏳ Mengunggah file...";
+    saveFormState();
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Data = e.target.result.split(',')[1];
+
+      try {
+        const response = await fetch(scriptURL, {
+          method: 'POST',
+          body: new URLSearchParams({
+            file: base64Data,
+            filename: date + " - " + name + " - " + file.name,
+            mimeType: file.type,
+            uploader: name,
+            date: date
+          })
+        });
+
+        let result;
+        try {
+          result = await response.json();
+        } catch {
+          result = { success: response.ok };
+        }
+
+        if (result && result.success) {
+          status.innerText = "✅ File berhasil diupload.";
+          saveFormState();
+
+          // beri sedikit jeda sebelum tutup
+          setTimeout(() => {
+            try {
+              // jika dibuka dari tab lain (lapor.html membuka popup)
+              if (window.opener && !window.opener.closed) {
+                window.close();
+                window.opener.focus();
+              } else {
+                // jika dibuka langsung, arahkan kembali saja
+                window.location.href = parentURL;
+              }
+            } catch {
+              window.location.href = parentURL;
+            }
+          }, 1500);
+        } else {
+          status.innerText = "❌ Gagal upload: " + (result && result.error ? result.error : "Unknown error");
+        }
+      } catch (err) {
+        status.innerText = "⚠️ Kesalahan: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
+
+</body>
+</html>
