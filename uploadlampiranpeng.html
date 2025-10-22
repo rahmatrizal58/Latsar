@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Upload Lampiran</title>
+<style>
+  body {
+    font-family: Arial;
+    margin: 20px;
+    background: #004d00; /* ✅ hijau tua untuk layar laptop */
+  }
+  .box {
+    background: #ccffcc; /* ✅ hijau muda untuk aplikasi */
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 300px;
+    margin: auto;
+    text-align: center;
+  }
+  input[type=file], input[type=text], input[type=date] {
+    margin: 10px 0;
+    width: 90%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #status {
+    margin-top: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h3>UPLOAD LAMPIRAN PENGAWASAN JPH</h3>
+  <p>Kanwil Kementerian Agama Provinsi Jawa Tengah</p>
+  <input type="text" id="uploaderName" placeholder="Masukkan nama Anda"><br>
+  <input type="date" id="uploadDate"><br>
+  <input type="file" id="fileInput"><br>
+  <button onclick="uploadFile()">Upload</button>
+  <p id="status"></p>
+</div>
+
+<script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwf8ducsTmcMfDLAGffdYJZI6AkdIZqTOZyqJ_2geRJO_fgPTSdwI7ha3hjz915wBeG/exec";
+
+  window.onload = () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('uploadDate').value = today;
+  };
+
+  async function uploadFile() {
+    const name = document.getElementById('uploaderName').value.trim();
+    const date = document.getElementById('uploadDate').value;
+    const fileInput = document.getElementById('fileInput');
+    const status = document.getElementById('status');
+    const file = fileInput.files[0];
+
+    if (!name) {
+      alert("Masukkan nama Anda terlebih dahulu!");
+      return;
+    }
+    if (!date) {
+      alert("Pilih tanggal upload!");
+      return;
+    }
+    if (!file) {
+      alert("Pilih file yang akan diupload!");
+      return;
+    }
+
+    status.innerText = "⏳ Mengunggah file...";
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Data = e.target.result.split(',')[1];
+
+      try {
+        const response = await fetch(scriptURL, {
+          method: 'POST',
+          body: new URLSearchParams({
+            file: base64Data,
+            filename: date + " - " + name + " - " + file.name,
+            mimeType: file.type,
+            uploader: name,
+            date: date
+          })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          status.innerText = "✅ File Anda telah terupload. Terima kasih.";
+          fileInput.value = "";
+          document.getElementById('uploaderName').value = "";
+        } else {
+          status.innerText = "❌ Gagal upload: " + result.error;
+        }
+      } catch (err) {
+        status.innerText = "⚠️ Kesalahan: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+</script>
+
+</body>
+</html>
