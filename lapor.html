@@ -143,8 +143,17 @@
       <input type="text" name="objek">
 
       <label>Tanggal Pengawasan:</label>
-      <input type="date" name="tanggal">
-
+      <div style="display:flex; gap:10px;">
+  <div style="flex:1;">
+    <label for="tanggal_mulai">Dari Tanggal:</label>
+    <input type="date" name="tanggal_mulai" required>
+  </div>
+  <div style="flex:1;">
+    <label for="tanggal_selesai">Sampai Tanggal:</label>
+    <input type="date" name="tanggal_selesai" required>
+  </div>
+</div>
+      
       <label>Lokasi Pengawasan:</label>
       <input type="text" name="lokasi">
 
@@ -222,6 +231,7 @@
 
 </body>
 </html>
+
 
 
 
